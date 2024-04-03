@@ -9,19 +9,16 @@ public partial struct SpawnBuferSystem : ISystem
     {
         state.RequireForUpdate<PlayerTag>();
     }
+
     public void OnUpdate(ref SystemState state)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Entity playerEntity = SystemAPI.GetSingletonEntity<PlayerTag>();
-            state.EntityManager.SetComponentEnabled<SwitchSpawn>(playerEntity, true);
-        }
-        if (!Input.GetMouseButtonDown(0)) return; 
-        
+        Switching(ref state);
+        if (!Input.GetMouseButtonDown(0)) return;  
+
         ObjectPrefab newObject = SystemAPI.GetSingleton<ObjectPrefab>();
         EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(state.WorldUpdateAllocator);
-        foreach(var localTransform 
-            in SystemAPI.Query<RefRW<LocalTransform>>().WithAll<PlayerTag>().WithDisabled<SwitchSpawn>())
+
+        foreach(var localTransform in SystemAPI.Query<RefRW<LocalTransform>>().WithAll<PlayerTag>().WithDisabled<SwitchSpawn>())
         {
            Entity spawnedEntity =  entityCommandBuffer.Instantiate(newObject.cubePrefab);
             entityCommandBuffer.SetComponent(spawnedEntity, new LocalTransform
@@ -33,5 +30,14 @@ public partial struct SpawnBuferSystem : ISystem
         }
         entityCommandBuffer.Playback(state.EntityManager);
     } 
+
+    private void Switching(ref SystemState state)
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Entity playerEntity = SystemAPI.GetSingletonEntity<PlayerTag>();
+            state.EntityManager.SetComponentEnabled<SwitchSpawn>(playerEntity, true);
+        }
+    }
 }
 
